@@ -44,6 +44,7 @@ class ColorServiceTest {
         c.setRgbB(51);
         c.setHue("red");
         c.setPaletteCount(3);
+
         return c;
     }
 
