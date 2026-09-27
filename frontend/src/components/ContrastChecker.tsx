@@ -39,7 +39,7 @@ export function ContrastChecker({ colors }: Props) {
         )
       })}
       <p className="text-xs text-stone-600 border-t border-stone-100 pt-3">
-        WCAG 2.1 — AA ≥ 4.5:1 normal · ≥ 3:1 large text · AAA ≥ 7:1
+        WCAG 2.1 - AA ≥ 4.5:1 normal · ≥ 3:1 large text · AAA ≥ 7:1
       </p>
     </div>
   )
