@@ -14,16 +14,6 @@ and the individual colors that make them up.
 ## Quickstart
 
 ```bash
-yarn install          # installs root devDependencies (concurrently)
-yarn dev               # runs backend (Gradle bootRun) + frontend (Vite) together
-```
-
-Frontend: http://localhost:5173 · Backend: http://localhost:8080 (H2 console at
-`/h2-console`, see [`AGENTS.md`](AGENTS.md) for credentials).
-
-Or run each side individually:
-
-```bash
 cd backend && ./gradlew bootRun
 cd frontend && yarn dev
 ```
