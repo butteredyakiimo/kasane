@@ -27,7 +27,7 @@ export function FilterBar({ filters, meta, onChange }: Props) {
   const hasActiveFilter = !!(filters.hue || filters.era || filters.type || filters.mood || filters.q)
 
   return (
-    <div className="sticky top-0 z-10 bg-[#FAFAF8]/90 backdrop-blur-sm border-b border-stone-200 px-6 py-3">
+    <div className="bg-[#FAFAF8]/90 backdrop-blur-sm border-b border-stone-200 px-6 py-3">
       <div className="flex flex-wrap gap-2 items-center">
         <input
           type="search"

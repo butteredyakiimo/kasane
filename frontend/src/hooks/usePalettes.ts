@@ -1,6 +1,6 @@
-import { useQuery } from '@tanstack/react-query'
+import { useMutation, useQuery } from '@tanstack/react-query'
 import { api } from '../services/api'
-import type { PaletteFilters } from '../types'
+import type { AssistantMessage, PaletteFilters } from '../types'
 
 export function usePalettes(filters: PaletteFilters) {
   return useQuery({
@@ -24,5 +24,12 @@ export function useFilterMeta() {
     queryKey: ['filter-meta'],
     queryFn: api.getFilterMeta,
     staleTime: Infinity,
+  })
+}
+
+export function useAssistantChat() {
+  return useMutation({
+    mutationFn: ({ message, history }: { message: string; history: AssistantMessage[] }) =>
+      api.sendAssistantMessage(message, history),
   })
 }

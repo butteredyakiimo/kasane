@@ -1,6 +1,32 @@
+import { useState } from 'react'
 import { Link, Outlet } from 'react-router-dom'
+import type { AssistantTurn, PaletteFilters } from '../types'
+
+export type BrowseMode = 'browse' | 'ask'
+
+export interface LayoutContext {
+  mode: BrowseMode
+  setMode: (mode: BrowseMode) => void
+  assistantTurns: AssistantTurn[]
+  setAssistantTurns: React.Dispatch<React.SetStateAction<AssistantTurn[]>>
+  filters: PaletteFilters
+  setFilters: React.Dispatch<React.SetStateAction<PaletteFilters>>
+  browseScrollY: number
+  setBrowseScrollY: (y: number) => void
+}
 
 export function Layout() {
+  // Owned here, not in BrowsePage/PaletteAssistant, so it survives navigating to
+  // DetailPage and back - Layout is the one component that stays mounted across routes.
+  const [mode, setMode] = useState<BrowseMode>('browse')
+  const [assistantTurns, setAssistantTurns] = useState<AssistantTurn[]>([])
+  const [filters, setFilters] = useState<PaletteFilters>({})
+  const [browseScrollY, setBrowseScrollY] = useState(0)
+
+  const context: LayoutContext = {
+    mode, setMode, assistantTurns, setAssistantTurns, filters, setFilters, browseScrollY, setBrowseScrollY,
+  }
+
   return (
     <div className="min-h-screen bg-[#FAFAF8] text-stone-900">
       <header className="border-b border-stone-200 px-6 py-4 flex items-center gap-6">
@@ -13,7 +39,7 @@ export function Layout() {
         </nav>
       </header>
       <main>
-        <Outlet />
+        <Outlet context={context} />
       </main>
     </div>
   )

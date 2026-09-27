@@ -1,5 +1,6 @@
 import { useNavigate } from 'react-router-dom'
 import type { Palette } from '../types'
+import { fullTitle } from '../utils/colorUtils'
 
 interface Props {
   palette: Palette
@@ -7,6 +8,7 @@ interface Props {
 
 export function PaletteCard({ palette }: Props) {
   const navigate = useNavigate()
+  const title = fullTitle(palette)
 
   return (
     <article
@@ -19,8 +21,11 @@ export function PaletteCard({ palette }: Props) {
         ))}
       </div>
       <div>
-        <p className="text-sm font-medium text-stone-800 leading-tight truncate group-hover:text-stone-600 transition-colors">
-          {palette.title}
+        <p
+          title={title}
+          className="text-sm font-medium text-stone-800 leading-tight truncate group-hover:text-stone-600 transition-colors"
+        >
+          {title}
         </p>
         <p className="text-xs text-stone-600 font-japanese mt-0.5">{palette.titleJa}</p>
         <div className="flex items-center gap-1.5 mt-1.5 flex-wrap">

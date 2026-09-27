@@ -3,7 +3,6 @@
 Read this before exploring the codebase — it's a small app and this doc should make
 further hierarchy/routing/state spelunking unnecessary.
 
-Stack: React 18 + TypeScript + Vite + TanStack Query + React Router v6 + Tailwind CSS.
 No Redux/Context store — server state lives in React Query, UI state is local
 `useState`. Backend is a separate Spring Boot app (`kasane/backend`) proxied at
 `/api` in dev (see `vite.config.ts`).
@@ -11,33 +10,7 @@ No Redux/Context store — server state lives in React Query, UI state is local
 ## Folder structure
 
 Flat, **type-based** (not feature-based) — everything is grouped by role, not by
-domain, since there's only one domain (palettes/colors):
-
-```
-src/
-  main.tsx           # ReactDOM root, wraps <App /> in StrictMode
-  App.tsx            # QueryClientProvider + BrowserRouter + route table
-  index.css          # Tailwind entrypoint
-  pages/             # route-level components (one per route)
-    BrowsePage.tsx
-    DetailPage.tsx
-  components/        # presentational / reusable components, no route awareness
-    Layout.tsx        # header/nav shell, renders <Outlet/>
-    FilterBar.tsx
-    PaletteCard.tsx
-    ColorSwatch.tsx
-    ContrastChecker.tsx
-    CSSExport.tsx
-    OutfitPreview.tsx
-  hooks/
-    usePalettes.ts    # all React Query hooks live here
-  services/
-    api.ts            # thin fetch wrapper, the only place that knows about /api
-  types/
-    index.ts          # shared TS interfaces (Palette, Color, PagedResponse, etc.)
-  utils/
-    colorUtils.ts     # pure color math (contrast ratio, WCAG, luminance, css var names)
-```
+domain, since there's only one domain (palettes/colors).
 
 If the app grows more domains (e.g. a "colors" browse page beyond the existing
 `api.getColors`/`getColor` stubs), consider migrating to feature folders
@@ -59,20 +32,6 @@ type-based buckets above.
   `<Link>`. `DetailPage` reads the slug via `useParams<{ slug: string }>()`.
 
 ## Component hierarchy
-
-```
-App
-└─ Layout                                  (header, nav, <Outlet/>)
-   ├─ BrowsePage                    [/]
-   │  ├─ FilterBar                         (search input + hue/era/type chips)
-   │  └─ PaletteCard × N                   (grid item, click → navigate to detail)
-   └─ DetailPage                    [/palettes/:slug]
-      ├─ ColorSwatch × colorCount          (large swatches, click-to-copy hex)
-      └─ tabbed panel (local `tab` state, one of 'outfit'|'contrast'|'css'):
-         ├─ OutfitPreview                  (SVG figure colored by palette)
-         ├─ ContrastChecker                (pairwise WCAG contrast table)
-         └─ CSSExport                      (generates :root CSS vars, copy button)
-```
 
 `components/` items are all leaf/presentational — they take data + callbacks as
 props and don't call hooks/`usePalettes` themselves. Only `pages/` call the data

@@ -4,34 +4,13 @@ This file provides guidance to AI coding agents (Claude Code, Codex, Cursor, etc
 
 ## What this is
 
-`kasane-backend` is a read-only Spring Boot REST API serving a reference dataset of traditional Japanese colors ("kasane no irome") and color palettes. Java 21, Spring Boot 3.2.5, Gradle. There is currently no frontend in this repo.
-
-## Commands
-
-```
-./gradlew bootRun                     # run the app (H2 in-memory, port 8080)
-./gradlew build                       # compile + run tests + package
-./gradlew test                        # run tests
-./gradlew test --tests "ClassName"    # run a single test class
-```
-
-`src/test/java/com/kasane` exists but is currently empty — there are no tests to model new ones after yet.
+`kasane-backend` is a read-only Spring Boot REST API serving a reference dataset of traditional Japanese colors ("kasane no irome") and color palettes.
 
 Dev DB is H2 in-memory, auto-seeded on every startup from CSV (see below); there's nothing to migrate or persist between runs. H2 console is enabled at `/h2-console` in dev only.
 
 ## Architecture
 
-Standard layered Spring MVC, one layer per package under `com.kasane`:
-
-```
-controller  → @RestController, request mapping + query params only, no logic
-service     → business logic, manual entity↔DTO mapping (toDto() methods), throws ResponseStatusException(404) on missing slug
-repository  → Spring Data JPA interfaces (JpaRepository + JpaSpecificationExecutor for Palette)
-spec        → JPA Specification builders for dynamic filtering (PaletteSpec)
-model       → @Entity classes (Color, Palette) — flat, Lombok @Data, no relationships between them
-dto         → API response shapes, decoupled from entities
-config      → CorsConfig (web config), DataLoader (startup CSV seeding)
-```
+Standard layered Spring MVC, one layer per package under `com.kasane`. Controllers hold no logic; services do manual entity↔DTO mapping.
 
 There are two independent resources — Colors and Palettes — with no association between the `Color` and `Palette` entities. `Palette` embeds up to 4 colors directly as flat columns (`hex1..hex4`, `colorName1..colorName4`, `colorNameJa1..colorNameJa4`) rather than via a join table or child entity; `PaletteService.toDto()` assembles these into a `List<PaletteColorDto>` based on `colorCount`.
 
@@ -45,7 +24,7 @@ There are two independent resources — Colors and Palettes — with no associat
 
 ### Authentication
 
-None. There is no Spring Security dependency, no auth middleware, no filters/interceptors of any kind. The only access control is `CorsConfig`, which restricts `/api/**` to `GET` requests from `http://localhost:5173` and `http://localhost:3000`.
+None. There is no Spring Security dependency, no auth middleware, no filters/interceptors of any kind. The only access control is `CorsConfig`, whose allowed origins come from `app.cors.allowed-origins` (localhost defaults in `application.yml`, `CORS_ALLOWED_ORIGINS` in prod).
 
 ### Data seeding
 

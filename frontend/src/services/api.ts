@@ -1,9 +1,19 @@
-import type { Color, FilterMeta, PagedResponse, Palette, PaletteFilters } from '../types'
+import type { AssistantMessage, AssistantResponse, Color, FilterMeta, PagedResponse, Palette, PaletteFilters } from '../types'
 
 const BASE = import.meta.env.VITE_API_BASE_URL ?? '/api'
 
 async function get<T>(path: string): Promise<T> {
   const res = await fetch(`${BASE}${path}`)
+  if (!res.ok) throw new Error(`${res.status} ${res.statusText}`)
+  return res.json()
+}
+
+async function post<T>(path: string, body: unknown): Promise<T> {
+  const res = await fetch(`${BASE}${path}`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+  })
   if (!res.ok) throw new Error(`${res.status} ${res.statusText}`)
   return res.json()
 }
@@ -16,7 +26,7 @@ function qs(params: Record<string, string | number | undefined>): string {
 
 export const api = {
   getPalettes: (f: PaletteFilters = {}): Promise<PagedResponse<Palette>> =>
-    get(`/palettes${qs({ page: f.page ?? 0, size: 24, hue: f.hue, era: f.era, type: f.type, mood: f.mood, q: f.q })}`),
+    get(`/palettes${qs({ page: f.page ?? 0, size: 48, hue: f.hue, era: f.era, type: f.type, mood: f.mood, q: f.q })}`),
 
   getPalette: (slug: string): Promise<Palette> =>
     get(`/palettes/${slug}`),
@@ -29,4 +39,7 @@ export const api = {
 
   getColor: (slug: string): Promise<Color> =>
     get(`/colors/${slug}`),
+
+  sendAssistantMessage: (message: string, history: AssistantMessage[]): Promise<AssistantResponse> =>
+    post('/assistant/chat', { message, history }),
 }

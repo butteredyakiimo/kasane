@@ -55,3 +55,23 @@ export interface PaletteFilters {
   q?: string
   page?: number
 }
+
+export interface AssistantMessage {
+  role: 'user' | 'assistant'
+  content: string
+  /** Required to resend an "assistant" turn as history - proves it genuinely came from
+   * the server. Absent on locally-synthesized messages (e.g. a fetch-failure fallback),
+   * which must be excluded when rebuilding the history to send. */
+  signature?: string
+}
+
+export interface AssistantResponse {
+  reply: string
+  palettes: Palette[]
+  signature: string
+}
+
+export interface AssistantTurn {
+  message: AssistantMessage
+  palettes?: Palette[]
+}
