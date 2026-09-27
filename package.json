@@ -1,7 +1,8 @@
 {
   "private": true,
   "scripts": {
-    "dev": "concurrently -n backend,frontend -c blue,green \"cd backend && ./gradlew bootRun\" \"cd frontend && yarn dev\"",
+    "dev": "cd frontend && yarn dev",
+    "dev:all": "concurrently -n backend,frontend -c blue,green \"cd backend && ./gradlew bootRun\" \"cd frontend && yarn dev\"",
     "build:backend": "cd backend && ./gradlew build",
     "build:frontend": "cd frontend && yarn build"
   },

@@ -31,6 +31,21 @@ are hand-kept in sync with the backend DTOs (see "Shared types" below) → compo
 the browser sees same-origin requests. CORS exists in dev but isn't really exercised
 through the proxy.
 
+**Palette assistant.** `POST /api/assistant/chat` (`com.kasane.assistant.*`) is the one
+write-shaped, non-read-only endpoint in the API — a conversational palette finder. It's
+intentionally separate from the read-only `Controller → Service → Repository` path
+above: `AssistantController` → `RateLimiterService` (per-IP token bucket, 429 on
+exceeded) → `ScopeGuardService` (Haiku 4.5, structured output, fails open on API/network
+errors) → `PaletteAssistantService` (manual Claude tool-use loop, Sonnet 5, tools =
+`search_palettes`/`get_filter_meta` calling straight into the existing `PaletteService`
+— no new query logic). The palette list returned to the frontend is always exactly
+what `search_palettes` returned that turn, never something parsed out of the model's
+prose — that's the hallucination guardrail. Both Anthropic exception types
+(`AnthropicServiceException` for HTTP-level failures, `AnthropicIoException` for
+network-level ones) share a common `AnthropicException` base; catch that, not the
+narrower subclass, or a DNS blip / offline sandbox surfaces as a raw 500 instead of the
+graceful fallback reply.
+
 **Transport, prod (AWS).** Static React build lives in S3, served through CloudFront
 — CloudFront is a CDN in front of S3 only, it does **not** proxy `/api` to the
 backend. Spring Boot runs dockerized on EC2 (or Elastic Beanstalk, which is EC2
@@ -46,6 +61,7 @@ what makes this actually work in prod, not just a dev-time safety net.
 | `DATABASE_URL` / `DATABASE_USER` / `DATABASE_PASSWORD` | `application-prod.yml` | n/a (H2, no env vars needed) | point at the RDS instance |
 | `CORS_ALLOWED_ORIGINS` | `application-prod.yml` → `CorsConfig` | n/a (`application.yml` defaults to `http://localhost:5173,http://localhost:3000`) | comma-separated list — the CloudFront/S3 domain (or custom domain) |
 | `VITE_API_BASE_URL` | `frontend/src/services/api.ts` | unset — falls back to `/api`, handled by the Vite proxy | absolute URL of the EC2/EB API, e.g. `https://api.<your-domain>.com` |
+| `ANTHROPIC_API_KEY` | `AssistantConfig` → `AnthropicOkHttpClient.fromEnv()` | required to actually exercise the palette assistant; without it the endpoint degrades gracefully (canned reply, no palettes) rather than failing | same var, set in the EC2/EB environment |
 
 **Important:** Vite inlines `import.meta.env.VITE_*` values **at build time**, not
 read at runtime. Since the frontend ships as a static S3 bundle, changing
@@ -69,7 +85,10 @@ frontend is the only JS package, so there's nothing to hoist or build-graph. The
 `package.json` is just a script runner:
 
 ```
-yarn dev              # runs backend (gradlew bootRun) + frontend (vite) together, via concurrently
+yarn dev              # frontend only (vite) - run the backend yourself in a separate
+                       # terminal (cd backend && ./gradlew bootRun) so env vars like
+                       # ANTHROPIC_API_KEY and backend logs are unambiguous
+yarn dev:all          # backend + frontend together via concurrently, the old `yarn dev` behavior
 yarn build:backend    # ./gradlew build
 yarn build:frontend   # vite build
 ```

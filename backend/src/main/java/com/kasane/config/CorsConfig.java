@@ -17,9 +17,13 @@ public class CorsConfig {
         return new WebMvcConfigurer() {
             @Override
             public void addCorsMappings(CorsRegistry registry) {
+                // One mapping, not two overlapping ones - Spring resolves a request's CORS
+                // config by matching a single pattern, not by picking the most specific
+                // match among several that apply, so a POST-only mapping under /api/assistant/**
+                // never actually takes effect for /api/**-covered paths.
                 registry.addMapping("/api/**")
                     .allowedOrigins(allowedOrigins)
-                    .allowedMethods("GET")
+                    .allowedMethods("GET", "POST")
                     .allowedHeaders("*");
             }
         };

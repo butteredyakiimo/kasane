@@ -1,3 +1,22 @@
+import type { Palette } from '../types'
+
+const ABBREVIATED_TITLE = /\s\+\d+$/
+
+/**
+ * Some source titles abbreviate 3rd/4th colors as "+1"/"+2" instead of naming them
+ * (e.g. "Red Orange & Pale Lemon Yellow +2"). Their prefix always matches color_1 &
+ * color_2 verbatim, so reconstructing the full name from `palette.colors` is a
+ * faithful un-abbreviation. Curated titles (e.g. "Cherry Blossom & Young Bamboo")
+ * don't follow this pattern and use names that don't match the raw color fields at
+ * all - those are left untouched.
+ */
+export function fullTitle(palette: Palette): string {
+  if (ABBREVIATED_TITLE.test(palette.title)) {
+    return palette.colors.map(c => c.name).join(' & ')
+  }
+  return palette.title
+}
+
 function toLinear(val: number): number {
   const s = val / 255
   return s <= 0.03928 ? s / 12.92 : Math.pow((s + 0.055) / 1.055, 2.4)

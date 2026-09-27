@@ -5,6 +5,7 @@ import { ContrastChecker } from '../components/ContrastChecker'
 import { CSSExport } from '../components/CSSExport'
 import { OutfitPreview } from '../components/OutfitPreview'
 import { usePalette } from '../hooks/usePalettes'
+import { fullTitle } from '../utils/colorUtils'
 
 type Tab = 'outfit' | 'contrast' | 'css'
 
@@ -60,7 +61,7 @@ export function DetailPage() {
       </Link>
 
       <div className="mt-6 mb-8">
-        <h1 className="text-3xl font-semibold text-stone-900 leading-tight">{palette.title}</h1>
+        <h1 className="text-3xl font-semibold text-stone-900 leading-tight">{fullTitle(palette)}</h1>
         <p className="text-lg text-stone-600 font-japanese mt-1">{palette.titleJa}</p>
 
         <div className="flex gap-2 flex-wrap mt-4">
