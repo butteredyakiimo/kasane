@@ -1,0 +1,33 @@
+# OS
+.DS_Store
+
+# Editors
+.idea/
+.vscode/*
+!.vscode/extensions.json
+*.iml
+
+# Secrets — never commit real env files, only *.example ones
+.env
+.env.*
+!.env.example
+!.env.*.example
+
+### Backend (Gradle) ###
+backend/build/
+backend/bin/
+backend/.gradle/
+backend/out/
+*.class
+*.log
+hs_err_pid*
+
+### Frontend (Yarn/Vite) ###
+frontend/node_modules/
+frontend/dist/
+frontend/.yarn/cache/
+frontend/.yarn/install-state.gz
+frontend/*.local
+
+### Root ###
+node_modules/
