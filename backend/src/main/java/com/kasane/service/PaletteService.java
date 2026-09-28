@@ -10,6 +10,7 @@ import com.kasane.spec.PaletteSpec;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
@@ -32,9 +33,13 @@ public class PaletteService {
 
     public PagedResponse<PaletteDto> getPalettes(int page, int size, String hue, String era,
                                                   Integer colorCount, String mood, String q) {
+        // Explicit sort is required, not optional - without it there's no ORDER BY at
+        // all, so the DB is free to return rows in whatever order it finds convenient,
+        // which can shift between calls (e.g. after a row was recently fetched
+        // individually via findBySlug).
         Page<Palette> palettePage = paletteRepository.findAll(
             PaletteSpec.withFilters(hue, era, colorCount, mood, q),
-            PageRequest.of(page, size)
+            PageRequest.of(page, size, Sort.by("id"))
         );
 
         PagedResponse<PaletteDto> response = new PagedResponse<>();

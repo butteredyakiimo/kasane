@@ -1,0 +1,39 @@
+services:
+  db:
+    image: postgres:16
+    container_name: kasane-db
+    environment:
+      POSTGRES_DB: kasane
+      POSTGRES_USER: kasane
+      # Default is a throwaway local-dev value
+      POSTGRES_PASSWORD: ${DATABASE_PASSWORD:-kasane}
+    ports:
+      - "127.0.0.1:5433:5432"
+    volumes:
+      - kasane-db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U kasane -d kasane"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  app:
+    profiles: ["full"]
+    build:
+      context: ./backend
+    container_name: kasane-app
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      SPRING_PROFILES_ACTIVE: prod
+      DATABASE_URL: jdbc:postgresql://db:5432/kasane
+      DATABASE_USER: kasane
+      DATABASE_PASSWORD: ${DATABASE_PASSWORD:-kasane}
+      CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS:-http://localhost:5173,http://localhost:3000}
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
+    ports:
+      - "8080:8080"
+
+volumes:
+  kasane-db-data:

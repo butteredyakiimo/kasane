@@ -29,10 +29,10 @@ dependencies {
     implementation 'org.apache.commons:commons-csv:1.10.0'
     implementation 'com.anthropic:anthropic-java:2.34.0'
     compileOnly 'org.projectlombok:lombok:1.18.34'
-    runtimeOnly 'com.h2database:h2'
     runtimeOnly 'org.postgresql:postgresql'
     annotationProcessor 'org.projectlombok:lombok:1.18.34'
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testRuntimeOnly 'com.h2database:h2'
 }
 
 tasks.named('test') {
