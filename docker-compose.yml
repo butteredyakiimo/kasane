@@ -1,0 +1,48 @@
+services:
+  db:
+    image: postgres:16
+    container_name: kasane-db
+    environment:
+      POSTGRES_DB: kasane
+      POSTGRES_USER: kasane
+      # Default is a throwaway local-dev value, fine to commit. On a real VPS
+      # deployment, override via a gitignored .env file next to this compose file -
+      # don't let a real DB password sit in this tracked file.
+      POSTGRES_PASSWORD: ${DATABASE_PASSWORD:-kasane}
+    ports:
+      # Host 5433 -> container 5432, since a native Postgres install may already
+      # be using 5432 on the host. Bound to 127.0.0.1 only - on the VPS this keeps
+      # Postgres off the public IP entirely (reachable only via SSH tunnel or from
+      # other containers on the compose network, e.g. `app`); on your Mac it's a
+      # no-op, since DataGrip already connects from the same machine.
+      - "127.0.0.1:5433:5432"
+    volumes:
+      - kasane-db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U kasane -d kasane"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  app:
+    profiles: ["full"]
+    build:
+      context: ./backend
+    container_name: kasane-app
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      SPRING_PROFILES_ACTIVE: prod
+      # `db` here is the compose service name, resolved over the compose network -
+      # not localhost:5433, which only exists from the host machine's point of view.
+      DATABASE_URL: jdbc:postgresql://db:5432/kasane
+      DATABASE_USER: kasane
+      DATABASE_PASSWORD: ${DATABASE_PASSWORD:-kasane}
+      CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS:-http://localhost:5173,http://localhost:3000}
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
+    ports:
+      - "8080:8080"
+
+volumes:
+  kasane-db-data:

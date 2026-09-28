@@ -6,7 +6,7 @@ This file provides guidance to AI coding agents (Claude Code, Codex, Cursor, etc
 
 `kasane-backend` is a read-only Spring Boot REST API serving a reference dataset of traditional Japanese colors ("kasane no irome") and color palettes.
 
-Dev DB is H2 in-memory, auto-seeded on every startup from CSV (see below); there's nothing to migrate or persist between runs. H2 console is enabled at `/h2-console` in dev only.
+Dev DB is Postgres via Docker Compose (`docker compose up -d` at repo root, container listens on host port 5433 to avoid clashing with any native Postgres on 5432), auto-seeded from CSV on first boot only — data persists across app restarts in the container's volume (see below).
 
 ## Architecture
 
@@ -32,5 +32,6 @@ None. There is no Spring Security dependency, no auth middleware, no filters/int
 
 ### Environments
 
-- Dev (`application.yml`): H2 in-memory (`ddl-auto: create-drop`, wiped every restart), H2 console on.
-- Prod (`application-prod.yml`): Postgres via `DATABASE_URL`/`DATABASE_USER`/`DATABASE_PASSWORD` env vars, `ddl-auto: update`, `open-in-view: false`, H2 console off.
+- Dev (`application.yml`): Postgres via Docker Compose at `jdbc:postgresql://localhost:5433/kasane` (user/pass `kasane`/`kasane`, local-only, not a real secret), `ddl-auto: update`. To wipe and reseed, `docker compose down -v && docker compose up -d`.
+- Prod (`application-prod.yml`): Postgres via `DATABASE_URL`/`DATABASE_USER`/`DATABASE_PASSWORD` env vars, `ddl-auto: update`. Runs as the `db` service in the repo-root `docker-compose.yml` alongside this app (the `app` service, `full` profile) on a single VPS — see root `AGENTS.md`.
+- Tests (`src/test/resources/application.yml`): H2 in-memory, `ddl-auto: create-drop` — `@DataJpaTest` needs a real embedded DB and doesn't need Postgres-specific behavior, so it stays fast and independent of Docker being up. H2 is a `testRuntimeOnly` dependency now, not used by the app itself.
