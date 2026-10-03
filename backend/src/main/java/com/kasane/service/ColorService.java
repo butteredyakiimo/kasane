@@ -6,7 +6,6 @@ import com.kasane.model.Color;
 import com.kasane.repository.ColorRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -22,7 +21,7 @@ public class ColorService {
 
     public PagedResponse<ColorDto> getColors(int page, int size) {
         // See PaletteService.getPalettes for why the explicit sort matters.
-        Page<Color> colorPage = colorRepository.findAll(PageRequest.of(page, size, Sort.by("id")));
+        Page<Color> colorPage = colorRepository.findAll(Paging.of(page, size, Sort.by("id")));
         PagedResponse<ColorDto> response = new PagedResponse<>();
         response.setContent(colorPage.getContent().stream().map(this::toDto).collect(Collectors.toList()));
         response.setPage(colorPage.getNumber());

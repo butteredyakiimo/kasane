@@ -9,7 +9,6 @@ import com.kasane.repository.PaletteRepository;
 import com.kasane.spec.PaletteSpec;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -39,7 +38,7 @@ public class PaletteService {
         // individually via findBySlug).
         Page<Palette> palettePage = paletteRepository.findAll(
             PaletteSpec.withFilters(hue, era, colorCount, mood, q),
-            PageRequest.of(page, size, Sort.by("id"))
+            Paging.of(page, size, Sort.by("id"))
         );
 
         PagedResponse<PaletteDto> response = new PagedResponse<>();

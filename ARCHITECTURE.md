@@ -38,13 +38,16 @@ flowchart LR
 - **Caddy** is the only publicly exposed service. It terminates TLS (Let's Encrypt
   for `API_DOMAIN`, provisioned automatically). TLS is mandatory here, because the
   HTTPS Vercel site can't call a plain-HTTP API (mixed content).
+- Caddy also caps request bodies at 256 KB (`request_body max_size`), because Spring
+  reads a whole `@RequestBody` into memory before any app-level check runs.
 - **app** and **db** publish ports on `127.0.0.1` only. They're reachable from the
   VPS itself for debugging and from other containers by service name, never from
   the internet.
 
 ## Backend
 
-Spring Boot 3 / Java 21, Spring Data JPA, Lombok, virtual threads enabled.
+Spring Boot 4 / Java 21, Spring Data JPA, Lombok, virtual threads enabled. List endpoints
+validate paging via `service/Paging` (`page >= 0`, `1 <= size <= 100`, else 400).
 
 ```
 com.kasane
