@@ -1,5 +1,6 @@
 package com.kasane.assistant;
 
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import java.util.concurrent.ConcurrentHashMap;
@@ -21,6 +22,17 @@ public class RateLimiterService {
         return bucket.tryConsume();
     }
 
+    /**
+     * Drops buckets that have been idle long enough to refill completely - they're
+     * indistinguishable from a fresh bucket, so this changes no behaviour, it just
+     * keeps the map from growing with every IP ever seen.
+     */
+    @Scheduled(fixedRate = 5 * 60 * 1000)
+    public void evictIdleBuckets() {
+        long now = System.nanoTime();
+        buckets.values().removeIf(bucket -> bucket.isFullyRefilled(now));
+    }
+
     private static class Bucket {
         private double tokens = CAPACITY;
         private long lastRefillNanos = System.nanoTime();
@@ -36,6 +48,11 @@ public class RateLimiterService {
                 return true;
             }
             return false;
+        }
+
+        synchronized boolean isFullyRefilled(long now) {
+            double elapsedSeconds = (now - lastRefillNanos) / 1_000_000_000.0;
+            return tokens + elapsedSeconds * REFILL_TOKENS_PER_SECOND >= CAPACITY;
         }
     }
 }
