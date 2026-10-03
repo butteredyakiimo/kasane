@@ -2,5 +2,12 @@
 # Caddy overwrites X-Forwarded-For with the real client IP rather than trusting a
 # client-supplied one, which the backend's per-IP rate limiter relies on.
 {$API_DOMAIN} {
+	# Spring reads a whole @RequestBody into memory before any app-level check (rate
+	# limiter, message-length validation) runs, so cap bodies here instead. Max legit
+	# chat request is ~21 x 1000 chars; at up to 3 UTF-8 bytes/char (Japanese text) that's
+	# ~63KB before JSON overhead, so 256KB leaves headroom while still blocking floods.
+	request_body {
+		max_size 256KB
+	}
 	reverse_proxy app:8080
 }

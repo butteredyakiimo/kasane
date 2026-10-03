@@ -3,7 +3,7 @@
 A reference browser for traditional Japanese color combinations ("kasane no irome")
 and the individual colors that make them up.
 
-- **Backend** — Java 21, Spring Boot 3, Gradle. Read-only REST API (`/api/colors`,
+- **Backend** — Java 21, Spring Boot 4, Gradle. Read-only REST API (`/api/colors`,
   `/api/palettes`) backed by Postgres (Docker Compose, dev and prod alike), seeded
   from CSV on first boot. See [`backend/AGENTS.md`](backend/AGENTS.md).
 - **Frontend** — React 18, TypeScript, Vite, TanStack Query, Tailwind CSS. See
