@@ -36,6 +36,7 @@ export function Layout() {
         </Link>
         <nav className="flex gap-4 text-sm text-stone-600">
           <Link to="/" className="hover:text-stone-700 transition-colors">Palettes</Link>
+          <Link to="/about" className="hover:text-stone-700 transition-colors">About</Link>
         </nav>
       </header>
       <main>

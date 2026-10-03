@@ -10,7 +10,7 @@ export function BrowsePage() {
   const {
     mode, setMode, assistantTurns, setAssistantTurns, filters, setFilters, browseScrollY, setBrowseScrollY,
   } = useOutletContext<LayoutContext>()
-  const { data, isLoading, isError } = usePalettes(filters)
+  const { data, isLoading, isError, refetch, isFetching } = usePalettes(filters)
   const { data: meta } = useFilterMeta()
 
   // Captures scroll position the instant this page is navigated away from (e.g. into
@@ -74,12 +74,21 @@ export function BrowsePage() {
 
           {isError && (
             <div className="text-center py-24 text-stone-600">
-              <p className="text-4xl mb-4">⚠️</p>
-              <p className="text-base font-medium text-stone-700 mb-1">Could not reach the API</p>
-              <p className="text-sm">Make sure the backend is running on port 8080.</p>
-              <code className="text-xs bg-stone-100 px-3 py-1.5 rounded mt-3 inline-block">
-                cd kasane/backend && ./gradlew bootRun
-              </code>
+              <p className="text-base font-medium text-stone-700 mb-1">Palettes couldn't be loaded</p>
+              <p className="text-sm">Something went wrong on our end. Please try again in a moment.</p>
+              <button
+                onClick={() => refetch()}
+                disabled={isFetching}
+                className="mt-5 px-4 py-2 text-sm font-medium rounded-lg bg-white border border-stone-200 text-stone-700 hover:border-stone-400 transition-colors disabled:opacity-50"
+              >
+                {isFetching ? 'Retrying…' : 'Try again'}
+              </button>
+              {/* Dev-only hint - stripped from production builds by Vite. */}
+              {import.meta.env.DEV && (
+                <p className="text-xs text-stone-500 mt-6">
+                  Dev: is the backend running? <code>cd backend && ./gradlew bootRun</code>
+                </p>
+              )}
             </div>
           )}
 

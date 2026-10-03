@@ -22,10 +22,14 @@ type-based buckets above.
 ```
 <Layout>                       "/"              -> BrowsePage
   (header/nav + <Outlet/>)     "/palettes/:slug" -> DetailPage
+                               "/about"          -> AboutPage
 ```
 
-- `Layout` is a pathless parent route — pure UI shell (Kasane header, "Palettes" nav
-  link), no data fetching. Renders children via `<Outlet/>`.
+- `Layout` is a pathless parent route — pure UI shell (Kasane header, "Palettes" /
+  "About" nav links), no data fetching. Renders children via `<Outlet/>`.
+- `AboutPage` is static (no data fetching) and holds the dataset's attribution: CC BY
+  4.0 for colorcombinations.org, the full MIT notice for mattdesl's dataset, and the
+  Sanzo Wada source. Keep it in sync with `README.md`'s "Data & attribution" section.
 - No nested/lazy routes, no route loaders/actions — data fetching happens inside
   page components via hooks, not via router loaders.
 - Navigation: `PaletteCard` uses `useNavigate()` on click; `Layout`/`DetailPage` use
