@@ -1,0 +1,6 @@
+# TLS-terminating reverse proxy in front of the Spring Boot app (`full` profile only).
+# Caddy overwrites X-Forwarded-For with the real client IP rather than trusting a
+# client-supplied one, which the backend's per-IP rate limiter relies on.
+{$API_DOMAIN} {
+	reverse_proxy app:8080
+}

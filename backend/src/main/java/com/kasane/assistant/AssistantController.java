@@ -21,19 +21,13 @@ public class AssistantController {
 
     @PostMapping("/chat")
     public ChatResponseDto chat(@RequestBody ChatRequestDto request, HttpServletRequest httpRequest) {
-        String clientKey = clientKey(httpRequest);
+        // Never read X-Forwarded-For directly - it's client-controlled. In prod,
+        // server.forward-headers-strategy resolves the real IP from trusted proxies only.
+        String clientKey = httpRequest.getRemoteAddr();
         if (!rateLimiterService.tryConsume(clientKey)) {
             throw new ResponseStatusException(HttpStatus.TOO_MANY_REQUESTS,
                 "Too many requests - please slow down.");
         }
         return paletteAssistantService.chat(request);
-    }
-
-    private String clientKey(HttpServletRequest request) {
-        String forwardedFor = request.getHeader("X-Forwarded-For");
-        if (forwardedFor != null && !forwardedFor.isBlank()) {
-            return forwardedFor.split(",")[0].trim();
-        }
-        return request.getRemoteAddr();
     }
 }

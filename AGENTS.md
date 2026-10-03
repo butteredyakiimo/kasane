@@ -54,8 +54,16 @@ narrower subclass, or a DNS blip / offline sandbox surfaces as a raw 500 instead
 graceful fallback reply.
 
 **Transport, prod (VPS + Vercel/Netlify).** Backend and DB are containerized together
-on a single VPS via `docker-compose.yml`'s `full` profile (`app` + `db` services on
-one Docker network, `app` reaching `db` by service name — see "Dev tooling" below).
+on a single VPS via `docker-compose.yml`'s `full` profile (`caddy` + `app` + `db`
+services on one Docker network, `app` reaching `db` by service name — see "Dev
+tooling" below). `caddy` is the only thing published publicly (80/443): it terminates
+TLS (required — the HTTPS Vercel site can't call a plain-HTTP API) and proxies to
+`app`, whose 8080 is bound to loopback only. The rate limiter keys on
+`getRemoteAddr()`, which `server.forward-headers-strategy: native` in
+`application-prod.yml` resolves from `X-Forwarded-For` only when the peer is an
+internal address — never read that header directly in code, it's client-spoofable.
+Vercel: project root `frontend`, `VITE_API_BASE_URL` set as a build env var,
+`frontend/vercel.json` rewrites all paths to `index.html` for React Router deep links.
 The frontend is a static build deployed separately to Vercel or Netlify's free tier
 (not part of this repo's deploy story beyond `yarn build:frontend` producing the
 bundle they serve). Because Vercel/Netlify and the VPS are different origins, the
@@ -72,7 +80,8 @@ backups/failover (own a `pg_dump` cron or similar if that data ever matters).
 | `SPRING_PROFILES_ACTIVE` | Spring Boot | unset (uses `application.yml`) | `prod` — set directly in `docker-compose.yml`'s `app` service (already done), or `application-prod.yml` never activates |
 | `DATABASE_URL` / `DATABASE_USER` / `DATABASE_PASSWORD` | `application-prod.yml` | n/a — dev connection is hardcoded in `application.yml` (`localhost:5433`, Docker Compose) | `DATABASE_URL` points at the `db` compose service (`jdbc:postgresql://db:5432/kasane`); `DATABASE_PASSWORD` should be overridden via a gitignored `.env` on the VPS, not left at the committed local-dev default |
 | `CORS_ALLOWED_ORIGINS` | `application-prod.yml` → `CorsConfig` | n/a (`application.yml` defaults to `http://localhost:5173,http://localhost:3000`) | comma-separated list — the Vercel/Netlify domain (or custom domain) |
-| `VITE_API_BASE_URL` | `frontend/src/services/api.ts` | unset — falls back to `/api`, handled by the Vite proxy | absolute URL of the VPS backend, e.g. `https://api.<your-domain>.com` |
+| `VITE_API_BASE_URL` | `frontend/src/services/api.ts` | unset — falls back to `/api`, handled by the Vite proxy | absolute URL of the VPS backend **including `/api`**, e.g. `https://api.<your-domain>.com/api` — `api.ts` request paths omit the prefix |
+| `API_DOMAIN` | `docker-compose.yml` → `caddy` service (`Caddyfile`) | n/a (defaults to `localhost`, self-signed cert) | public hostname of the API; DNS A record → VPS, Caddy provisions Let's Encrypt automatically |
 | `ANTHROPIC_API_KEY` | `AssistantConfig` → `AnthropicOkHttpClient.fromEnv()` | required to actually exercise the palette assistant; without it the endpoint degrades gracefully (canned reply, no palettes) rather than failing | same var, set on the VPS (host env, passed through by `docker-compose.yml`) |
 
 **Important:** Vite inlines `import.meta.env.VITE_*` values **at build time**, not
