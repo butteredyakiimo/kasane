@@ -39,7 +39,7 @@ export function BrowsePage() {
   return (
     <>
       <div className="sticky top-0 z-10 bg-[#FAFAF8]">
-        <div className="flex gap-2 px-6 py-4 border-b border-stone-200">
+        <div className="flex gap-2 px-4 sm:px-6 py-3 sm:py-4 border-b border-stone-200">
           {(['browse', 'ask'] as const).map(m => (
             <button
               key={m}
